@@ -7,7 +7,7 @@ import os
 
 
 logger = logging.getLogger('Watch')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 
 async def handle_ws(request):
