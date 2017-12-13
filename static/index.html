@@ -94,21 +94,11 @@
 		function _emote(descriptor) {
 			let mapping = new Map([
 				['', ''], // 
-				['connect',    '\u21C8'], // ⇈
-				['disconnect', '\u21CA'], // ⇊
 				['container',  '\u29C9'], // ⧉
 				['network',    '\u2933'], // ⤳
-				['create',     '\u2A01'], // ⨁
-				['destroy',    '\u2A02'], // ⨂
-				['start',      '\u2191'], // ↑
-				['stop',       '\u2193'], // ↓
-				['kill',       '\u25FC'], // ◼
-				['die',        '\u25A1'], // □
 				['image',      '\u29C2'], // ⧂
-				['untag',      '\u29B5'], // ⦵
-				['delete',     '\u29BB'], // ⦻
+				['service',    '\u223E'], // ∾
 			]);
-
 			if (mapping.has(descriptor)) {
 				return mapping.get(descriptor) + ' ' + descriptor;
 			}
@@ -137,7 +127,7 @@
 			let _fmt = `[service:${event['Actor']['Attributes']['com.docker.swarm.service.name']} > container:${event['Actor']['Attributes']['com.docker.swarm.task.id']} (${event['Actor']['Attributes']['image'].split('@')[0]})]`
 			return [
 				_span(_emote(event['Type'])),
-				_span(_emote(event['Action'])),
+				_span(event['Action']),
 				_span(_fmt)
 			];
 		}
@@ -145,7 +135,7 @@
 		function network(event) {
 			return [
 				_span(_emote(event['Type'])),
-				_span(_emote(event['Action'])),
+				_span(event['Action']),
 				_span(event['Actor']['Attributes']['name'])
 			];
 		}
@@ -153,7 +143,7 @@
 		function image(event) {
 			return [
 				_span(_emote(event['Type'])),
-				_span(_emote(event['Action'])),
+				_span(event['Action']),
 				_span(event['Actor']['Attributes']['name'])
 			];
 		}
@@ -161,7 +151,7 @@
 		function service(event) {
 			return [
 				_span(_emote(event['Type'])),
-				_span(_emote(event['Action'])),
+				_span(event['Action']),
 				_span(event['Actor']['Attributes']['name'])
 			];
 		}
