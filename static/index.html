@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+<title>Watch</title>
+<style type="text/css">
+	html {
+		-webkit-font-smoothing: antialiased;
+	}
+	body {
+		font-family: 'Helvetica Neue', 'Roboto', sans-serif;
+		color: #000;
+		background-color: #f4f4f4;
+		font-weight: 400;
+		font-size: 16px;
+		line-height: 1.2em;
+		margin: 0;
+	}
+	.wrapper {
+		display: block;
+		width: 100%;
+		max-width: 900px;
+		margin: auto;
+		position: relative;
+		margin: 10px auto;
+		box-shadow: 3px 3px 20px -4px rgba(0, 0, 0, 0.3);
+		background-color: #fff;
+		border-radius: 2px;
+		overflow: hidden;
+	}
+	p {
+		margin:0 0 10px;
+	}
+	a { 
+		color: #333;
+	}
+	code {
+		width: 100%;
+		text-overflow: ellipsis;
+		white-space: pre;
+	}
+	.event {
+		display: block;
+		white-space: nowrap;
+		padding: 4px;
+		overflow: hidden;
+		height: 1em;
+	}
+	.event * { 
+		display: inline-block;
+		padding-left: 4px;
+	}
+
+	.event > span:nth-child(1) { width: 100px; }
+	.event > span:nth-child(2) { width: 100px; }
+
+	.create, .connect, .start, .pull, .update { background-color: #a6ff9e;}
+	.kill, .stop                     { background-color: #ffc29e;}
+	.destroy, .die, .delete          { background-color: #ff9e9e;}
+	.untag, .disconnect, .remove     { background-color: #fff59e;}
+</style>
+</head>
+<body>
+	<div class="wrapper">
+		<div id="output"></div>
+	</div>
+	<script type="text/javascript">
+		'use strict';
+		let output = document.getElementById("output");
+		let wsUri = (window.location.protocol == 'https:' && 'wss://' || 'ws://') + window.location.host + "/ws";
+		let ws = new WebSocket(wsUri);
+
+		ws.addEventListener('message', handle);
+		ws.addEventListener('error', handle);
+
+		function handle(evt) {
+			let data = JSON.parse(evt.data);
+			console.log(evt.data);
+			let eventitem = document.createElement('div');
+			eventitem.classList.add('event', data['Type'], data['Action']);
+			for (let ele of route(data)) {
+				eventitem.classList.add()
+				eventitem.appendChild(ele);
+			}
+			output.appendChild(eventitem);
+			eventitem.scrollIntoViewIfNeeded();
+		}
+
+		function _span(text) {
+			let e = document.createElement('span');
+			e.appendChild(document.createTextNode(text));
+			return e;
+		}
+
+		function _emote(descriptor) {
+			let mapping = new Map([
+				['', ''], // 
+				['connect',    '\u21C8'], // ⇈
+				['disconnect', '\u21CA'], // ⇊
+				['container',  '\u29C9'], // ⧉
+				['network',    '\u2933'], // ⤳
+				['create',     '\u2A01'], // ⨁
+				['destroy',    '\u2A02'], // ⨂
+				['start',      '\u2191'], // ↑
+				['stop',       '\u2193'], // ↓
+				['kill',       '\u25FC'], // ◼
+				['die',        '\u25A1'], // □
+				['image',      '\u29C2'], // ⧂
+				['untag',      '\u29B5'], // ⦵
+				['delete',     '\u29BB'], // ⦻
+			]);
+
+			if (mapping.has(descriptor)) {
+				return mapping.get(descriptor) + ' ' + descriptor;
+			}
+			return descriptor;
+		}
+
+		function route(event) {
+			let handlers = new Map([
+				['container', container],
+				['network', network],
+				['image', image],
+				['service', service],
+			]);
+			if (handlers.has(event['Type'])) {
+				return handlers.get(event['Type'])(event);
+			} else {
+				return _default(event);
+			}
+		}
+
+		function _default(event) {
+			return [document.createTextNode(JSON.stringify(event))];
+		}
+
+		function container(event) {
+			let _fmt = `[service:${event['Actor']['Attributes']['com.docker.swarm.service.name']} > container:${event['Actor']['Attributes']['com.docker.swarm.task.id']} (${event['Actor']['Attributes']['image'].split('@')[0]})]`
+			return [
+				_span(_emote(event['Type'])),
+				_span(_emote(event['Action'])),
+				_span(_fmt)
+			];
+		}
+
+		function network(event) {
+			return [
+				_span(_emote(event['Type'])),
+				_span(_emote(event['Action'])),
+				_span(event['Actor']['Attributes']['name'])
+			];
+		}
+
+		function image(event) {
+			return [
+				_span(_emote(event['Type'])),
+				_span(_emote(event['Action'])),
+				_span(event['Actor']['Attributes']['name'])
+			];
+		}
+
+		function service(event) {
+			return [
+				_span(_emote(event['Type'])),
+				_span(_emote(event['Action'])),
+				_span(event['Actor']['Attributes']['name'])
+			];
+		}
+	</script>
+</body>
+</html>
