@@ -98,6 +98,7 @@
 				['network',    '\u2933'], // ⤳
 				['image',      '\u29C2'], // ⧂
 				['service',    '\u223E'], // ∾
+				['node',       '\u25A1'], // □
 			]);
 			if (mapping.has(descriptor)) {
 				return mapping.get(descriptor) + ' ' + descriptor;
@@ -111,6 +112,7 @@
 				['network', network],
 				['image', image],
 				['service', service],
+				['node', node],
 			]);
 			if (handlers.has(event['Type'])) {
 				return handlers.get(event['Type'])(event);
@@ -149,6 +151,14 @@
 		}
 
 		function service(event) {
+			return [
+				_span(_emote(event['Type'])),
+				_span(event['Action']),
+				_span(event['Actor']['Attributes']['name'])
+			];
+		}
+
+		function node(event) {
 			return [
 				_span(_emote(event['Type'])),
 				_span(event['Action']),
